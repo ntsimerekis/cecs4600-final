@@ -11,7 +11,7 @@ def main():
     elif sys.argv[1] == 'server':
         start_server(sys.argv[2], sys.argv[3])
     elif sys.argv[1] == 'client':
-        start_client(sys.argv[2], sys.argv[3], sys.argv[4])
+        start_client(sys.argv[2], sys.argv[3], sys.argv[4], True if len(sys.argv) >= 6 and sys.argv[5] == 'with-corruption' else False)
 
 if __name__ == '__main__':
     main()

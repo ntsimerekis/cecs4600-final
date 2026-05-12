@@ -1,6 +1,8 @@
 import os
 import sys
 import struct
+
+import cryptography
 from OpenSSL import crypto
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -60,13 +62,13 @@ def encrypt_with_rsa_public(key: crypto.PKey, message_bytes: bytes) -> bytes:
 Decrypt AES GCM Message
 """
 def decrypt_aes_message(aes_key: AESGCM, nonce: bytes, ciphertext: bytes) -> bytes:
-    return (
-        aes_key.decrypt(
-            nonce,
-            ciphertext,
-            None
+        return (
+            aes_key.decrypt(
+                nonce,
+                ciphertext,
+                None
+            )
         )
-    )
 
 """
 Encrypt A message Using AES GCM using a New Key
