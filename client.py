@@ -11,12 +11,13 @@ def start_client(my_keyname: str, their_keyname: str, message: str, with_corrupt
     if with_corruption:
         #lets corrupt the ciphertext by flipping the first byte
         ciphertext_byte_array = bytearray(ciphertext)
+        #flip the first bit in the first byte of the ciphertext
         ciphertext_byte_array[0] ^= (1 << 0)
         ciphertext = bytes(ciphertext_byte_array)
 
-    encrypted_aes_key_bytes = encrypt_with_rsa_public(public_key, aes_key_bytes)
+    encrypted_aes_key_and_nonce_bytes = encrypt_with_rsa_public(public_key, aes_key_bytes + nonce)
 
-    payload: bytes = generate_formatted_encrypted_message(encrypted_aes_key_bytes, nonce, ciphertext)
+    payload: bytes = generate_formatted_encrypted_message(encrypted_aes_key_and_nonce_bytes, nonce, ciphertext)
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect(('127.0.0.1', 9999))

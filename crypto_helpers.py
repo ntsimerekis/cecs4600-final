@@ -13,14 +13,14 @@ from cryptography.hazmat.primitives import hashes
     Unpack message payload
 """
 def get_key_and_size_formatted_encrypted_message_header(message: bytes, private_key: rsa.RSAPrivateKey) -> tuple[AESGCM, bytes, int]:
-    assert(len(message) == 528)
+    assert(len(message) == 516)
 
-    encrypted_aes_key_bytes, nonce, size_bytes = struct.unpack('>512s12sI', message)
+    encrypted_aes_key_and_nonce_bytes, size_bytes = struct.unpack('>512sI', message)
 
-    aes_key_bytes = (
+    aes_key_bytes_and_nonce_bytes = (
         private_key.decrypt(
             #Right here we are decypting the shared AES Key using Alice's private key
-            encrypted_aes_key_bytes,
+            encrypted_aes_key_and_nonce_bytes,
 
             #padding was used in the encryption process because encrypting too little information with RSA can cause issues
             padding.OAEP(
@@ -30,14 +30,18 @@ def get_key_and_size_formatted_encrypted_message_header(message: bytes, private_
             )
         )
     )
-
+    aes_key_bytes = aes_key_bytes_and_nonce_bytes[:32]
+    nonce = aes_key_bytes_and_nonce_bytes[-12:]
     return AESGCM(aes_key_bytes), nonce, size_bytes
 
 """
     Generate formatted encrypted message payload
 """
-def generate_formatted_encrypted_message(rsa_encrypted_aes_key: bytes, nonce: bytes, ciphertext: bytes) -> bytes:
-    header = struct.pack('>512s12sI', rsa_encrypted_aes_key, nonce, len(ciphertext))
+def generate_formatted_encrypted_message(rsa_encrypted_aes_key_and_nonce: bytes, nonce: bytes, ciphertext: bytes) -> bytes:
+    #the server will expect a 528 byte header with all this information
+    #we need to specify to the server the length of the ciphertext so it knows how many additional bytes
+    #should be read from the socket
+    header = struct.pack('>512sI', rsa_encrypted_aes_key_and_nonce, len(ciphertext))
     full_packet = header + ciphertext
 
     return full_packet

@@ -8,9 +8,10 @@ class ReceiveHandler(socketserver.BaseRequestHandler):
     def handle(self):
         private_key: RSAPrivateKey = self.server.private_key.to_cryptography_key()
 
-        header_bytes = self.request.recv(528)
+        header_bytes = self.request.recv(516)
         aes_key, nonce, size = get_key_and_size_formatted_encrypted_message_header(header_bytes, private_key)
 
+        #see here we actually receive the ciphertext
         ciphertext = self.request.recv(size)
 
         try:
